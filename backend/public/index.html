@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Phòng Gym / Fitness</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    body { background-color: #f4f6f9; font-family: system-ui, -apple-system, sans-serif; }
+    .top-navbar { background-color: #212529; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .stat-card { border-radius: 8px; padding: 16px 20px; color: #fff; }
+    .stat-title { font-size: 0.9rem; font-weight: 500; opacity: 0.9; }
+    .stat-number { font-size: 2.2rem; font-weight: 700; line-height: 1.1; margin-top: 4px; }
+    .bg-stat-blue { background-color: #0d6efd; }
+    .bg-stat-green { background-color: #198754; }
+    .bg-stat-cyan { background-color: #0dcaf0; color: #fff; }
+    .bg-stat-yellow { background-color: #ffc107; color: #212529; }
+    .nav-tab-btn { border: none; background: #e9ecef; color: #495057; padding: 9px 18px; border-radius: 6px; font-weight: 600; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+    .nav-tab-btn:hover { background: #dee2e6; }
+    .nav-tab-btn.active { background-color: #0d6efd; color: #fff; }
+    .panel-box { background: #fff; border-radius: 8px; padding: 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); height: 100%; }
+    .panel-box h4 { font-size: 1.15rem; font-weight: 700; margin-bottom: 18px; }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <header class="top-navbar">
+    <div class="fw-bold fs-5 d-flex align-items-center gap-2">
+      <i class="bi bi-pause-fill text-warning fs-3"></i> HỆ THỐNG PHÒNG GYM & FITNESS
+    </div>
+    <span class="badge bg-success px-3 py-2 fs-6"><i class="bi bi-check-lg me-1"></i> Docker Running</span>
+  </header>
+
+  <main class="container-fluid px-4 py-4">
+    <!-- 4 Khối thống kê tự động cập nhật số liệu -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card bg-stat-blue">
+          <div class="stat-title">Hội Viên</div>
+          <div class="stat-number" id="count-members">0</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card bg-stat-green">
+          <div class="stat-title">Huấn Luyện Viên</div>
+          <div class="stat-number" id="count-trainers">0</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card bg-stat-cyan">
+          <div class="stat-title">Gói Tập</div>
+          <div class="stat-number" id="count-packages">0</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card bg-stat-yellow">
+          <div class="stat-title">Lịch Tập Sắp Tới</div>
+          <div class="stat-number" id="count-schedules">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thanh chuyển Tab không làm giật URL -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button class="nav-tab-btn active" onclick="showTab('tab-members', this)"><i class="bi bi-people-fill"></i> Hội Viên</button>
+      <button class="nav-tab-btn" onclick="showTab('tab-schedules', this)"><i class="bi bi-calendar-event"></i> Lịch Tập</button>
+      <button class="nav-tab-btn" onclick="showTab('tab-trainers', this)"><i class="bi bi-person-walking"></i> Huấn Luyện Viên</button>
+      <button class="nav-tab-btn" onclick="showTab('tab-packages', this)"><i class="bi bi-tag-fill"></i> Gói Tập</button>
+    </div>
+
+    <!-- PHÂN HỆ 1: HỘI VIÊN -->
+    <section id="tab-members" class="tab-section active">
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="panel-box">
+            <h4>Đăng Ký Hội Viên</h4>
+            <form id="form-member">
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Họ và Tên</label>
+                <input type="text" id="m-name" class="form-control" placeholder="Nguyễn Văn A" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Số Điện Thoại</label>
+                <input type="text" id="m-phone" class="form-control" placeholder="09xxxxxxxx" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Email</label>
+                <input type="email" id="m-email" class="form-control" placeholder="a@gmail.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Gói Tập</label>
+                <select id="m-pkg" class="form-select"></select>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">Thêm Hội Viên</button>
+            </form>
+          </div>
+        </div>
+        <div class="col-12 col-lg-8">
+          <div class="panel-box">
+            <h4>Danh Sách Hội Viên</h4>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light small">
+                  <tr><th>ID</th><th>Họ Tên</th><th>Điện Thoại</th><th>Email</th><th>Gói Tập</th><th>Ngày Vào</th><th>Xử lý</th></tr>
+                </thead>
+                <tbody id="member-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHÂN HỆ 2: LỊCH TẬP -->
+    <section id="tab-schedules" class="tab-section">
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="panel-box">
+            <h4>Đặt Lịch Tập</h4>
+            <form id="form-schedule">
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Chọn Hội Viên</label>
+                <select id="s-member" class="form-select"></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Chọn Huấn Luyện Viên</label>
+                <select id="s-trainer" class="form-select"></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Thời Gian</label>
+                <input type="datetime-local" id="s-time" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-warning w-100 fw-bold py-2 mt-2">Lưu Lịch Tập</button>
+            </form>
+          </div>
+        </div>
+        <div class="col-12 col-lg-8">
+          <div class="panel-box">
+            <h4>Lịch Tập Sắp Tới</h4>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light small">
+                  <tr><th>Mã Lịch</th><th>Hội Viên</th><th>Huấn Luyện Viên</th><th>Thời Gian</th><th>Trạng Thái</th><th>Xử lý</th></tr>
+                </thead>
+                <tbody id="schedule-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHÂN HỆ 3: HUẤN LUYỆN VIÊN -->
+    <section id="tab-trainers" class="tab-section">
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="panel-box">
+            <h4>Thêm Huấn Luyện Viên</h4>
+            <form id="form-trainer">
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Họ Tên HLV</label>
+                <input type="text" id="t-name" class="form-control" placeholder="Trần Văn Hùng" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Chuyên Môn</label>
+                <input type="text" id="t-spec" class="form-control" placeholder="Thể hình, Yoga, Cardio..." required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Số Điện Thoại</label>
+                <input type="text" id="t-phone" class="form-control" placeholder="09xxxxxxxx" required>
+              </div>
+              <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-2">Lưu HLV</button>
+            </form>
+          </div>
+        </div>
+        <div class="col-12 col-lg-8">
+          <div class="panel-box">
+            <h4>Đội Ngũ Huấn Luyện Viên</h4>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light small">
+                  <tr><th>Mã HLV</th><th>Họ Tên</th><th>Chuyên Môn</th><th>Điện Thoại</th><th>Trạng Thái</th><th>Xử lý</th></tr>
+                </thead>
+                <tbody id="trainer-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHÂN HỆ 4: GÓI TẬP -->
+    <section id="tab-packages" class="tab-section">
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="panel-box">
+            <h4>Tạo Gói Tập Mới</h4>
+            <form id="form-package">
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Tên Gói</label>
+                <input type="text" id="p-name" class="form-control" placeholder="Gói VIP 6 Tháng" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Thời Hạn</label>
+                <input type="text" id="p-dur" class="form-control" placeholder="6 Tháng" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">Giá Tiền</label>
+                <input type="text" id="p-price" class="form-control" placeholder="2,000,000 đ" required>
+              </div>
+              <button type="submit" class="btn btn-info text-white w-100 fw-bold py-2 mt-2">Thêm Gói</button>
+            </form>
+          </div>
+        </div>
+        <div class="col-12 col-lg-8">
+          <div class="panel-box">
+            <h4>Bảng Giá & Gói Dịch Vụ</h4>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light small">
+                  <tr><th>Mã Gói</th><th>Tên Gói</th><th>Thời Hạn</th><th>Giá Tiền</th><th>Xử lý</th></tr>
+                </thead>
+                <tbody id="package-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Dữ liệu mặc định ban đầu
+    const initMembers = [
+      { id: 4, name: "vu minh hiep", phone: "0998123456", email: "hiep2211@gmail.com", pkg: "Gói 1 Tháng", date: "23/10/2026" },
+      { id: 2, name: "Pham Thi Thu", phone: "0934445566", email: "thupham@gmail.com", pkg: "Gói 3 Tháng", date: "15/02/2026" },
+      { id: 1, name: "Le Van Nam", phone: "0901112233", email: "namle@gmail.com", pkg: "Gói VIP 1 Năm", date: "10/01/2026" }
+    ];
+    const initTrainers = [
+      { id: "HLV1", name: "Nguyễn Văn Hùng", spec: "Thể hình / Tăng cơ", phone: "0912345678" },
+      { id: "HLV2", name: "Trần Mai Ly", spec: "Yoga & Giảm cân", phone: "0923456789" },
+      { id: "HLV3", name: "Đỗ Minh Tuấn", spec: "Kick Boxing / Cardio", phone: "0934567890" }
+    ];
+    const initPackages = [
+      { id: "GT01", name: "Gói 1 Tháng", dur: "30 ngày", price: "400,000 đ" },
+      { id: "GT02", name: "Gói 3 Tháng", dur: "90 ngày", price: "1,000,000 đ" },
+      { id: "GT03", name: "Gói VIP 1 Năm", dur: "365 ngày", price: "3,600,000 đ" }
+    ];
+    const initSchedules = [
+      { id: "LT01", member: "vu minh hiep", trainer: "Nguyễn Văn Hùng", time: "24/10/2026 08:00", status: "Đã xác nhận" },
+      { id: "LT02", member: "Pham Thi Thu", trainer: "Trần Mai Ly", time: "24/10/2026 17:30", status: "Chờ xác nhận" },
+      { id: "LT03", member: "Le Van Nam", trainer: "Đỗ Minh Tuấn", time: "25/10/2026 19:00", status: "Đã lên lịch" }
+    ];
+
+    // Khởi tạo LocalStorage nếu chưa có
+    let members = JSON.parse(localStorage.getItem('gym_members')) || initMembers;
+    let trainers = JSON.parse(localStorage.getItem('gym_trainers')) || initTrainers;
+    let packages = JSON.parse(localStorage.getItem('gym_packages')) || initPackages;
+    let schedules = JSON.parse(localStorage.getItem('gym_schedules')) || initSchedules;
+
+    function saveAll() {
+      localStorage.setItem('gym_members', JSON.stringify(members));
+      localStorage.setItem('gym_trainers', JSON.stringify(trainers));
+      localStorage.setItem('gym_packages', JSON.stringify(packages));
+      localStorage.setItem('gym_schedules', JSON.stringify(schedules));
+      render();
+    }
+
+    // Chuyển Tab mượt mà
+    function showTab(tabId, btn) {
+      document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Vẽ lại bảng và số liệu
+    function render() {
+      document.getElementById('count-members').innerText = members.length;
+      document.getElementById('count-trainers').innerText = trainers.length;
+      document.getElementById('count-packages').innerText = packages.length;
+      document.getElementById('count-schedules').innerText = schedules.length;
+
+      // Render Hội viên
+      document.getElementById('member-rows').innerHTML = members.map((m, i) => `
+        <tr>
+          <td class="fw-bold text-secondary">#${m.id}</td>
+          <td class="fw-bold">${m.name}</td><td>${m.phone}</td><td>${m.email}</td>
+          <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">${m.pkg}</span></td>
+          <td>${m.date}</td>
+          <td><button class="btn btn-sm btn-outline-danger" onclick="delMember(${i})"><i class="bi bi-trash"></i></button></td>
+        </tr>`).join('');
+
+      // Render HLV
+      document.getElementById('trainer-rows').innerHTML = trainers.map((t, i) => `
+        <tr>
+          <td class="fw-bold text-secondary">#${t.id}</td>
+          <td class="fw-bold">${t.name}</td><td><span class="badge bg-secondary">${t.spec}</span></td><td>${t.phone}</td>
+          <td><span class="badge bg-success">Hoạt động</span></td>
+          <td><button class="btn btn-sm btn-outline-danger" onclick="delTrainer(${i})"><i class="bi bi-trash"></i></button></td>
+        </tr>`).join('');
+
+      // Render Gói tập
+      document.getElementById('package-rows').innerHTML = packages.map((p, i) => `
+        <tr>
+          <td class="fw-bold text-secondary">#${p.id}</td>
+          <td class="fw-bold text-primary">${p.name}</td><td>${p.dur}</td><td>${p.price}</td>
+          <td><button class="btn btn-sm btn-outline-danger" onclick="delPackage(${i})"><i class="bi bi-trash"></i></button></td>
+        </tr>`).join('');
+
+      // Render Lịch tập
+      document.getElementById('schedule-rows').innerHTML = schedules.map((s, i) => `
+        <tr>
+          <td class="fw-bold text-secondary">#${s.id}</td>
+          <td>${s.member}</td><td>${s.trainer}</td><td>${s.time}</td>
+          <td><span class="badge ${s.status === 'Đã xác nhận' ? 'bg-success' : 'bg-warning text-dark'}">${s.status}</span></td>
+          <td><button class="btn btn-sm btn-outline-danger" onclick="delSchedule(${i})"><i class="bi bi-trash"></i></button></td>
+        </tr>`).join('');
+
+      // Đổ dropdown cho Form đặt lịch & hội viên
+      document.getElementById('m-pkg').innerHTML = packages.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+      document.getElementById('s-member').innerHTML = members.map(m => `<option value="${m.name}">${m.name} (#${m.id})</option>`).join('');
+      document.getElementById('s-trainer').innerHTML = trainers.map(t => `<option value="${t.name}">${t.name} (${t.spec})</option>`).join('');
+    }
+
+    // Các hàm xóa
+    function delMember(i) { members.splice(i, 1); saveAll(); }
+    function delTrainer(i) { trainers.splice(i, 1); saveAll(); }
+    function delPackage(i) { packages.splice(i, 1); saveAll(); }
+    function delSchedule(i) { schedules.splice(i, 1); saveAll(); }
+
+    // Sự kiện submit các Form
+    document.getElementById('form-member').onsubmit = (e) => {
+      e.preventDefault();
+      members.unshift({
+        id: members.length ? Math.max(...members.map(m=>m.id))+1 : 1,
+        name: document.getElementById('m-name').value,
+        phone: document.getElementById('m-phone').value,
+        email: document.getElementById('m-email').value,
+        pkg: document.getElementById('m-pkg').value,
+        date: new Date().toLocaleDateString('vi-VN')
+      });
+      saveAll(); e.target.reset();
+    };
+
+    document.getElementById('form-trainer').onsubmit = (e) => {
+      e.preventDefault();
+      trainers.push({
+        id: 'HLV' + (trainers.length + 1),
+        name: document.getElementById('t-name').value,
+        spec: document.getElementById('t-spec').value,
+        phone: document.getElementById('t-phone').value
+      });
+      saveAll(); e.target.reset();
+    };
+
+    document.getElementById('form-package').onsubmit = (e) => {
+      e.preventDefault();
+      packages.push({
+        id: 'GT0' + (packages.length + 1),
+        name: document.getElementById('p-name').value,
+        dur: document.getElementById('p-dur').value,
+        price: document.getElementById('p-price').value
+      });
+      saveAll(); e.target.reset();
+    };
+
+    document.getElementById('form-schedule').onsubmit = (e) => {
+      e.preventDefault();
+      schedules.unshift({
+        id: 'LT0' + (schedules.length + 1),
+        member: document.getElementById('s-member').value,
+        trainer: document.getElementById('s-trainer').value,
+        time: document.getElementById('s-time').value.replace('T', ' '),
+        status: 'Đã xác nhận'
+      });
+      saveAll(); e.target.reset();
+    };
+
+    // Khởi chạy khi load trang
+    render();
+  </script>
+</body>
+</html>
